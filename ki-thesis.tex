@@ -235,7 +235,7 @@ V Ústí nad Labem dne \today   \hfill Podpis: \makebox[4cm][s]{\dotfill}
 
 \begin{flushright}
     Děkuji vedoucímu práce \vedouciDAT\\ 
-    za neocenitelné rady a pomoc při tvorbě bakalářské práce.
+    za odborné vedení, cenné metodické připomínky a~především za mimořádnou vstřícnost, flexibilitu a~podporu během celého procesu zpracování této bakalářské práce.
 \end{flushright}
 
 \cleardoublepage
@@ -271,15 +271,23 @@ Cílem práce je analýza dostupných možností integrace externích webových 
 
 Pro zpracování práce byla zvolena inženýrská metodika Code-First, tedy vývoj a~testování funkčního proof-of-concept ještě před samotným sepsáním textu. Tento přístup umožnil ověřit proveditelnost navržené integrace v~praxi a~v~textu reflektovat i~konkrétní technické komplikace a~jejich řešení, se kterými se vývojáři při~integraci do proprietárních ekosystémů nevyhnutelně setkávají.
 
-\chapter{Teoretická východiska integrace a autorizace na webu}
+Práce je strukturována do šesti logicky navazujících kapitol. První kapitola definuje teoretická východiska autorizačních standardů na webu. Druhá kapitola přináší rešerši existujících řešení, na kterou navazuje třetí kapitola analyzující integrační rozhraní vybraných platforem a s nimi spojená rizika. Čtvrtá kapitola obsahuje komplexní inženýrský návrh architektury a datového modelu aplikace Sitzy. Pátá kapitola detailně popisuje praktickou realizaci, zajištění kvality a nasazení celého systému. Šestá kapitola se následně věnuje uživatelskému výzkumu a vyhodnocení telemetrických dat, přičemž celkové dosažené výsledky a reflexi řešení shrnuje Závěr.
 
-Předložená kapitola definuje teoretický rámec a provádí analýzu technologických 
-standardů, protokolů a bezpečnostních paradigmat, která tvoří základní pilíře pro 
-integraci externích webových služeb do ekosystémů sociálních sítí. Z marketingového 
-hlediska tato integrace umožňuje transformaci vlastního (\textit{owned}) obsahu do 
-sdílené (\textit{shared}) a získané (\textit{earned}) podoby v prostředí sociálních 
-sítí \cite{Quesenberry2024}; z technického hlediska však vyžaduje robustní řešení 
-delegované autorizace, jemuž je věnována zbývající část kapitoly. Pozornost je soustředěna na evoluci architektonických stylů a autorizačních mechanismů, které v současnosti determinují způsob bezpečného přenosu identit a řízení přístupových oprávnění v distribuovaném prostředí internetu.
+\chapter{Teoretická východiska autorizace}
+
+Při návrhu integrace vlastních webových služeb do prostředí sociálních sítí je klíčové nejprve definovat, jakou roli tyto platformy v~širším ekosystému hrají. Jak uvádí Quesenberry, z~pohledu ucelené strategie již sociální sítě nepředstavují pouze izolovaná komunikační rozhraní, ale staly se nezbytnou součástí budování vlastněných (\textit{owned}) a sdílených (\textit{shared}) mediálních kanálů \cite{Quesenberry2024}. Technicky tak tvoří komplexní infrastrukturu, jejíž integrační potenciál a služby poskytované externím aplikacím lze rozdělit do tří základních vrstev:
+
+\begin{enumerate}
+    \item \textbf{Autentizační a identitní vrstva (Federated Identity):} Umožňuje přenést správu identit na zavedené poskytovatele (např. Facebook, X). Pro externí službu to znamená eliminaci nutnosti implementovat a zabezpečovat vlastní databázi hesel, čímž se radikálně snižují nároky na uživatele při registraci.
+    
+    \item \textbf{Datová vrstva (Sociální graf):} Poskytuje přístup k~sociálním vazbám uživatele (seznamy přátel, sledované účty, zájmové skupiny). Tato vrstva by teoreticky měla umožnit přirozené organické propojení uživatelů uvnitř nové aplikace bez nutnosti budovat sociální vazby od nuly.
+    
+    \item \textbf{Distribuční a komunikační vrstva (Content Distribution):} Zahrnuje API pro automatizované sdílení obsahu (příspěvky na zeď, zprávy v~chatu, webhooky do komunitních kanálů). Slouží k~virálnímu šíření informací a asynchronnímu upozorňování uživatelů o~aktivitách v~aplikaci.
+\end{enumerate}
+
+V~ideálním a otevřeném webovém prostředí by vývojář mohl plně využívat všechny tři vrstvy. V~reálné praxi však dochází k~ostrému střetu mezi potřebami vývojářů a ochranou obchodních zájmů i soukromí uživatelů ze strany provozovatelů platforem. Zatímco identitní vrstva (autentizace) je z~titulu standardizace (OAuth 2.0, OIDC) široce podporovaná a dostupná, přístup k~sociálnímu grafu a přímé distribuci obsahu je u~dominantních platforem z~byrokratických a bezpečnostních důvodů pro nezávislé autory téměř zcela uzavřen. Tento rozpor určuje výchozí inženýrský problém, který tato práce analyzuje a řeší.
+
+\clearpage
 
 \section{Architektura webových rozhraní a přechod k SPA}
 
@@ -357,7 +365,7 @@ Ochrana proti Cross-Site Request Forgery (CSRF) byla historicky řešena paramet
 
 Pro dosažení nejvyšší úrovně zabezpečení je doporučeno nasazení standardu Pushed Authorization Requests \cite{Lodderstedt2025}. V rámci tohoto toku klient neposílá parametry požadavku přes prohlížeč uživatele, ale odešle je přímým voláním z backendu na server (back-channel). Server tyto parametry validuje a vrátí klientovi krátkodobý referenční token, který je následně použit pro přesměrování. Tento přístup zamezuje úniku citlivých dat z URL a chrání integritu požadavku proti podvržení \cite{Lodderstedt2025}. Tato kombinace mechanismů PKCE a PAR představuje v současném technologickém paradigmatu nejspolehlivější metodu zmírnění rizik při integraci externích aplikačních služeb. Na tyto teoretické standardy delegované autorizace a doporučené bezpečnostní postupy bezprostředně navazuje podrobná rešerše existujících systémů.
 
-\chapter{Rešerše existujících přístupů a příkladů integrace}
+\chapter{Rešerše existujících řešení}
 \label{chap:reserse_pristupu}
 
 V této kapitole je proveden systematický přehled existujících technologických přístupů, akademických prací a komerčních či komunitních platforem zaměřených na organizaci a koordinaci spolujízdy. Zvláštní zřetel je věnován způsobu, jakým tato řešení integrují prvky sociálních sítí, jak řeší správu uživatelské autentizace a jakým způsobem přistupují k distribuci obsahu a pozvánek v~rámci klientských rozhraní. Analýza těchto systémů slouží jako inženýrské východisko pro návrh a implementaci vlastní aplikace Sitzy, jejíž podrobná architektura je představena v kapitole \vref{chap:navrh_architektury}.
@@ -471,7 +479,7 @@ Syntéza zjištěných poznatků jasně ukazuje, že existující řešení se p
 
 Z těchto důvodů se návrh vlastní architektury aplikace Sitzy opírá o vývoj dedikovaného a~plně kontrolovaného asynchronního backendu na bázi FastAPI, který umožňuje implementovat pokročilé zabezpečení (OAuth 2.0 s PKCE a PAR, oddělené uložení sezení v PostgreSQL s vazbou dual-FK) s nulovými provozními licenčními poplatky, čímž představuje ideální technologickou odpověď pro komunitní spolujízdu v uzavřených skupinách.
 
-\chapter{Analýza integračního potenciálu vybraných platforem a platformních rizik}
+\chapter{Analýza integračních rozhraní a rizik}
 \label{chap:analyza_poskytovatelu}
 
 Jak bylo podrobně rozebráno v podkapitole \vref{subsec:od_otevrenych_protokolu_k_proprietarnim_rozhranim}, dominantní sociální sítě záměrně omezují přístup k sociálnímu grafu a přenositelnosti dat, čímž posilují své tržní postavení. Tato kapitola proto analyzuje konkrétní technologické a administrativní limity jednotlivých platforem, aby poskytla podklad pro návrh robustní integrace aplikace Sitzy.
@@ -611,7 +619,7 @@ Srovnaní klíčových parametrů platforem shrnuje tabulka \vref{tab:srovnani_a
 
 Pro aplikaci \textit{Sitzy} je proto nezbytné implementovat hybridní model identity, který minimalizuje závislost na jediném poskytovateli a umožní flexibilní správu uživatelských dat i v prostředí s~omezenou dostupností profilových informací. Vyhodnocení platformních rizik a srovnání integračních parametrů poskytovatelů identit tvoří nezbytný analytický podklad pro návrh robustní architektury a bezpečnostního modelu aplikace, což je předmětem kapitoly \vref{chap:navrh_architektury}.
 
-\chapter{Návrh architektury a bezpečnostního modelu aplikace Sitzy}
+\chapter{Návrh architektury aplikace Sitzy}
 \label{chap:navrh_architektury}
 
 Návrh architektury a datového modelu referenční aplikace \textit{Sitzy} představuje přímou reakci na technické limity, restrikce rozhraní a platformní rizika, která byla identifikována v předchozí analýze uzavřených ekosystémů, označovaných jako \textit{Walled Gardens} \cite{Marro2025,DeNardis2015}. Hlavním cílem navrženého řešení je konstrukce bezpečného, asynchronního a škálovatelného systému pro koordinaci spolujízd v uzavřených komunitách. Systém je navržen tak, aby zcela eliminoval nutnost lokální správy hesel, čímž se minimalizují související bezpečnostní rizika a administrativní zátěž spojená s~ochranou citlivých údajů \cite{Naryama2026525,Cavoukian2010}. V kontextu této práce slouží aplikace primárně jako výzkumný nástroj pro posouzení limitů delegované identity v prostředí, kde vývojář nedisponuje plnou kontrolou nad sociálním grafem uživatelů \cite{Mudassir20241030,Sommerville2011}.
@@ -740,7 +748,7 @@ Tento automat zaručuje onboarding bez ztráty kontextu a respektuje zásady och
 
 \end{enumerate}
 
-\chapter{Realizace, zajištění kvality a nasazení systému}
+\chapter{Realizace a nasazení systému}
 \label{chap:realizace_qa_nasazeni}
 
 Tato kapitola je věnována detailnímu rozboru praktické realizace, technologické implementace, zajištění kvality a produkčního nasazení referenční webové platformy \textit{Sitzy}. Cílem textu je demonstrovat, jak byly principy softwarové modularity, asynchronního zpracování dat, delegované federované identity a přísného zabezpečení transformovány do reálné programové báze. Vývoj celého systému probíhal s důrazem na typovou bezpečnost, modularitu kódu a odolnost vůči platformním rizikům a omezením korporátních ekosystémů.
@@ -1232,7 +1240,7 @@ Heroku Scheduler        & Standard    & zdarma \\
 
 Popsaná praktická rozhodnutí jako atomická operace nad Redisem, klientský Promise Coalescing, kaskádní integrita PostgreSQL i vynucení CI před nasazením ukazují, že integrace webové služby do ekosystémů sociálních sítí vyžaduje průběžné technické reakce na chování konkrétních platforem, nejen jednorázový architektonický návrh. Zvolená Code-First metodika umožnila odhalovat a řešit reálná platformní rizika ještě před sepsáním této kapitoly, což dokládá i oprava chybějící HMAC verifikace deletion callbacku popsaná v podkapitole \vref{sec:gdpr_compliance} -- konkrétní zranitelnost třídy Broken Authentication \cite{Yalon2023API2}, identifikovaná a opravená v průběhu vývoje.
 
-\chapter{Uživatelský výzkum a serverless telemetrie}
+\chapter{Uživatelský výzkum}
 \label{chap:uzivatelsky_vyzkum}
 
 Tato kapitola je věnována empirické evaluaci navržené architektury a hodnocení její úspěšnosti v reálném provozu. Uživatelský výzkum byl koncipován s důrazem na kombinaci objektivních telemetrických dat a subjektivního hodnocení ze strany respondentů. Hlavním cílem bylo ověřit, jakým způsobem bezheslová autorizace a Open Graph integrace zjednodušují proces koordinace a~nakolik eliminují technické překážky při distribuci pozvánek.
@@ -1396,17 +1404,17 @@ Projevily se rovněž charakteristiky poptávky výzkumu (\textit{demand charact
 
 V~neposlední řadě je nutné zmínit technické limity párování dat. Metodika byla plně závislá na spolehlivém přenosu tokenu přes úložiště \texttt{sessionStorage} a URL parametry. K~přerušení relace a následnému selhání spárování s~výzkumným dotazníkem mohlo dojít v~případě, že uživatel spustil testování v~agresivně nastaveném anonymním režimu prohlížeče, který izoluje lokální úložiště, nebo pokud měl globálně zakázané ukládání dat webových stránek.
 
-\addchap{Závěr}
+\chapter{Závěr}
 
-Předložená bakalářská práce úspěšně splnila všechny stanovené cíle. V~rámci teoretické i~praktické části byla detailně analyzována problematika integrace webových služeb do proprietárních ekosystémů sociálních sítí a~navrženo referenční řešení, které bylo úspěšně ověřeno v~reálném provozu na pilotní aplikaci Sitzy. Vývoj této platformy podle inženýrské metodiky \textit{Code-First} umožnil konfrontovat teoretické předpoklady s~praktickými limity a~vytvořit robustní, bezheslový systém plně respektující moderní bezpečnostní standardy i~legislativní požadavky na ochranu osobních údajů.
+Předložená bakalářská práce se zabývala analýzou integračního potenciálu vybraných platforem sociálních sítí, zhodnocením s~tím spojených administrativních i~technických rizik a~realizací referenční bezheslové architektury. V~rámci teoretické i~praktické části byla detailně analyzována problematika integrace webových služeb do proprietárních ekosystémů sociálních sítí s~cílem navrhnout technické řešení, které bylo následně ověřeno v~reálném provozu na pilotní aplikaci Sitzy. Vývoj této platformy podle inženýrské metodiky \textit{Code-First} umožnil konfrontovat teoretické předpoklady s~praktickými limity a~vytvořit robustní, bezheslový systém plně respektující moderní bezpečnostní standardy i~legislativní požadavky na ochranu osobních údajů.
 
-Zhodnocení klíčových architektonických rozhodnutí potvrzuje, že úplné vyloučení lokální správy hesel a~delegování autentizační vrstvy na prověřené poskytovatele identity představuje vysoce efektivní strategii. Tento přístup v~souladu s~principy ochrany soukromí již od návrhu zcela eliminoval riziko úniku citlivých přihlašovacích údajů a~hrozbu zneužití odcizených identit na jiných službách. Použití pokročilých standardů, jako je protokol OAuth 2.0 chráněný kryptografickým mechanismem pro veřejné klienty, a~bezpečné uložení sezení na backendu pomocí oddělené správy relací, prokázalo vysokou úroveň zabezpečení. Uložení obnovovacích tokenů v~zabezpečených klientských cookies s~nastavením pro zamezení přístupu skriptů a~ochranu před útoky napříč weby úspěšně izolovalo klientskou jednostránkovou aplikaci od citlivých operací. Z~hlediska legislativního souladu s~nařízením GDPR se jako zásadní ukázala referenční integrita relačního schématu, která při smazání účtu garantuje fyzickou a~kaskádovou likvidaci uživatelských dat přímo na úrovni databázového stroje, zatímco oddělené zpracování auditních logů bezpečně uchovává nezbytnou auditní stopu bez ukládání osobních identifikátorů.
+Z~hlediska klíčových architektonických rozhodnutí se úplné vyloučení lokální správy hesel a~delegování autentizační vrstvy na prověřené poskytovatele identity ukázalo jako funkční strategii. Tento přístup v~souladu s~principy ochrany soukromí již od návrhu odstraňuje riziko úniku citlivých přihlašovacích údajů a~hrozbu zneužití odcizených identit na jiných službách. Použití pokročilých standardů, jako je protokol OAuth 2.0 chráněný kryptografickým mechanismem pro veřejné klienty, a~bezpečné uložení sezení na backendu pomocí oddělené správy relací, přispělo k~zajištění bezpečnosti. Uložení obnovovacích tokenů v~zabezpečených klientských cookies s~nastavením pro zamezení přístupu skriptů a~ochranu před útoky napříč weby izoluje klientskou jednostránkovou aplikaci od citlivých operací. Z~hlediska legislativního souladu s~nařízením GDPR se jako zásadní ukázala referenční integrita relačního schématu, která při smazání účtu garantuje fyzickou a~kaskádovou likvidaci uživatelských dat přímo na úrovni databázového stroje, zatímco oddělené zpracování auditních logů bezpečně uchovává nezbytnou auditní stopu bez ukládání osobních identifikátorů.
 
-Praktická realizace však zároveň odhalila slabé stránky a~rizika plynoucí z~vysoké závislosti na rozhraních třetích stran. Rigidní politiky a~nestabilita rozhraní v~prostředí uzavřených ekosystémů představují pro nezávislé vývojáře značné administrativní i~technické překážky. Během uživatelského výzkumu se jako největší bariéra projevil testovací režim platformy Meta, kde absence deklarované role pro běžné testery a~nutnost manuálního schvalování vývojářských účtů pro každého respondenta drasticky zvýšily uživatelské tření při onboardingu a~omezily využití přihlášení přes Facebook na minimum. Naopak decentralizovaný systém distribuce pozvánek prostřednictvím jednorázových odkazů se ukázal jako mimořádně úspěšná strategická odpověď na tato omezení. Tím, že se propojování uživatelů přesunulo mimo uzavřené sociální sítě do autonomní správy aplikace, byla zachována plná nezávislost na vnitřních sociálních grafech externích platforem.\\
+Praktická realizace však zároveň odhalila slabé stránky a~rizika plynoucí z~vysoké závislosti na rozhraních třetích stran. Rigidní politiky a~nestabilita rozhraní v~prostředí uzavřených ekosystémů představují pro nezávislé vývojáře značné administrativní i~technické překážky. Během uživatelského výzkumu se jako největší bariéra projevil testovací režim platformy Meta, kde absence deklarované role pro běžné testery a~nutnost manuálního schvalování vývojářských účtů pro každého respondenta zvýšily uživatelské tření při onboardingu a~omezily využití přihlášení přes Facebook na minimum. Naopak decentralizovaný systém distribuce pozvánek prostřednictvím jednorázových odkazů představuje funkční strategickou odpověď na tato omezení. Tím, že se propojování uživatelů přesunulo mimo uzavřené sociální sítě do autonomní správy aplikace, byla zachována plná nezávislost na vnitřních sociálních grafech externích platforem.\\
 
-Pro další rozvoj a~zvýšení provozní odolnosti systému se jako nejvhodnější krok jeví integrace dalších významných poskytovatelů federované identity, konkrétně služeb Google a~Apple. Přestože se v~těchto případech nejedná o~klasické sociální sítě, jejich zapojení do autentizační vrstvy představuje klíčové inženýrské opatření pro zajištění nezbytné redundance. Diverzifikace přihlašovacích autorit na stabilní ekosystémy Google a~Apple by účinně eliminovala závislost na úzkém portfoliu třetích stran, zmírnila platformní rizika spojená s~častými změnami politik poskytovatelů a~zároveň by dramaticky usnadnila registraci na mobilních zařízeních s~operačními systémy iOS a~Android.
+Pro další rozvoj a~zvýšení provozní odolnosti systému se nabízí integrace dalších významných poskytovatelů federované identity, konkrétně služeb Google a~Apple. Přestože se v~těchto případech nejedná o~klasické sociální sítě, jejich zapojení do autentizační vrstvy může sloužit jako inženýrské opatření pro zajištění provozní redundance. Diverzifikace přihlašovacích autorit na stabilní ekosystémy Google a~Apple přispěla ke snížení závislost na úzkém portfoliu třetích stran, zmírnila platformní rizika spojená s~častými změnami politik poskytovatelů a~zároveň by mohla usnadnit registraci na mobilních zařízeních s~operačními systémy iOS a~Android.
 
-Z~hlediska dlouhodobé technologické perspektivy by mohl systém v~budoucnu směřovat k~nativní bezheslové autentizaci pomocí otevřených standardů a~přihlašovacích klíčů (Passkeys). Toto řešení by kombinovalo maximální uživatelský komfort (přihlašování otiskem prstu či obličejem přímo v~prohlížeči) s~absolutní nezávislostí na jakýchkoliv externích korporátních rozhraních a~vývojářských portálech. V~oblasti distribuce obsahu a~koordinace spolujízd se jako přirozená evoluční cesta nabízí hlubší integrace do komunitních platforem Telegram a~Discord, které byly v~práci vyhodnoceny jako velmi perspektivní. Vývoj dedikovaných komunikačních botů a~přímých upozornění o~obsazenosti vozidel, případně transformace klientského rozhraní do podoby interní chatové aplikace, by umožnily koordinovat spolujízdu a~zobrazovat interaktivní schéma vozu přímo v~kontextu probíhající skupinové konverzace, což by posunulo uživatelskou přívětivost celého systému na novou úroveň.
+Z~hlediska dlouhodobé technologické perspektivy by mohl systém v~budoucnu směřovat k~nativní bezheslové autentizaci pomocí otevřených standardů a~přihlašovacích klíčů (Passkeys). Toto řešení nabízí kombinaci uživatelského komfortu (přihlašování otiskem prstu či obličejem přímo v~prohlížeči) s~nezávislostí na externích korporátních rozhraních a~vývojářských portálech. V~oblasti distribuce obsahu a~koordinace spolujízd se jako přirozená evoluční cesta nabízí hlubší integrace do komunitních platforem Telegram a~Discord, které se v~analytické části ukazují jako perspektivní. Vývoj dedikovaných komunikačních botů a~přímých upozornění o~obsazenosti vozidel, případně transformace klientského rozhraní do podoby interní chatové aplikace, by umožnily koordinovat spolujízdu a~zobrazovat interaktivní schéma vozu přímo v~kontextu probíhající skupinové konverzace, což by mohlo dále zvýšit uživatelskou přívětivost celého systému.
 
 \sloppy
 \printbibliography[title=Seznam použitých zdrojů]
