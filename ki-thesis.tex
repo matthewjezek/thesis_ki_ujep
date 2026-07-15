@@ -275,10 +275,10 @@ Práce je strukturována do šesti logicky navazujících kapitol. První kapito
 
 \chapter{Teoretická východiska autorizace}
 
-Při návrhu integrace vlastních webových služeb do prostředí sociálních sítí je klíčové nejprve definovat, jakou roli tyto platformy v~širším ekosystému hrají. Jak uvádí Quesenberry, z~pohledu ucelené strategie již sociální sítě nepředstavují pouze izolovaná komunikační rozhraní, ale staly se nezbytnou součástí budování vlastněných (\textit{owned}) a sdílených (\textit{shared}) mediálních kanálů \cite{Quesenberry2024}. Technicky tak tvoří komplexní infrastrukturu, jejíž integrační potenciál a služby poskytované externím aplikacím lze rozdělit do tří základních vrstev:
+Při návrhu integrace vlastních webových služeb do prostředí sociálních sítí je klíčové nejprve definovat, jakou roli tyto platformy v~širším ekosystému hrají. Jak uvádí Quesenberry \cite{Quesenberry2024}, z~pohledu ucelené strategie již sociální sítě nepředstavují pouze izolovaná komunikační rozhraní, ale staly se nezbytnou součástí budování vlastněných (\textit{owned}) a sdílených (\textit{shared}) mediálních kanálů. Technicky tak tvoří komplexní infrastrukturu, jejíž integrační potenciál a služby poskytované externím aplikacím lze rozdělit do tří základních vrstev:
 
 \begin{enumerate}
-    \item \textbf{Autentizační a identitní vrstva (Federated Identity):} Umožňuje přenést správu identit na zavedené poskytovatele (např. Facebook, X). Pro externí službu to znamená eliminaci nutnosti implementovat a zabezpečovat vlastní databázi hesel, čímž se radikálně snižují nároky na uživatele při registraci.
+    \item \textbf{Autentizační a identitní vrstva (Federated Identity):} Umožňuje přenést správu identit na zavedené poskytovatele (např. platformy Facebook, X). Pro externí službu to znamená eliminaci nutnosti implementovat a zabezpečovat vlastní databázi hesel, čímž se radikálně snižují nároky na uživatele při registraci.
     
     \item \textbf{Datová vrstva (Sociální graf):} Poskytuje přístup k~sociálním vazbám uživatele (seznamy přátel, sledované účty, zájmové skupiny). Tato vrstva by teoreticky měla umožnit přirozené organické propojení uživatelů uvnitř nové aplikace bez nutnosti budovat sociální vazby od nuly.
     
